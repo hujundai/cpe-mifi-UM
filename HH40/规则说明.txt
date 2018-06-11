@@ -1,0 +1,8 @@
+命名规则：
+1. 文件夹名字规则：CustomerID_Customername
+2. UM命名规则：USER_Manual_语言简写.pdf
+3. 非定制目录，如version1类型的目录，文件夹名中不能使用下划线_
+
+其他规则：
+1. 如某定制使用的是00_Generic的um，则不需要新建该定制目录
+2. 如某定制使用的是version1目录的um，则在该定制目录下添加空文件,文件名为version1.redirect

@@ -1,0 +1,117 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+  <title></title>
+  <meta charset="utf-8">
+  <script src="https://cdn.bootcss.com/underscore.js/1.8.3/underscore-min.js"></script>
+  <script src="./cpe_config.js"></script>
+</head>
+
+<body>
+  <div style="text-align: center" id="loading">
+    loading...
+  </div>
+  <script>
+    //http://www.tcl-move.com/um/url.html?project=HH41&custom=KR&lang=en
+    var href = window.location.href;
+    var project = GetQueryString("project")
+    var custom = GetQueryString("custom")
+    var lang = GetQueryString("lang") || 'en'
+
+    function GetQueryString(name) {
+      var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+      var r = window.location.search.substr(1).match(reg);
+      if (r != null) return unescape(r[2]).replace(/(^\s*)|(\s*$)/g, "");
+      return null;
+    };
+
+
+    function IsEndWith(str, endStr) {
+      var d = str.length - endStr.length;
+      return (d >= 0 && str.lastIndexOf(endStr) == d)
+    }
+
+    function findUmPath(serCustomIdName) {
+      var umFile = ""
+      var umlist = cpe_config[project][serCustomIdName].umlist
+
+      function _findUm(lang) {
+        var _umFile = ""
+        _.each(umlist, function (v) {
+          var umName = v;
+          umName = umName.split(".")[0]
+          if (IsEndWith(umName, "_" + lang)) {
+            _umFile = project + "/" + serCustomIdName + "/" + v
+            return false
+          }
+        })
+        return _umFile
+      }
+      umFile = _findUm(lang)
+      if (umFile == "") {
+        umFile = _findUm("en")
+      }
+      return umFile
+    }
+
+    function initCpeUM() {
+      if (_.has(cpe_config, project)) {
+        var umPath = ""
+        var serCustomIdName = ""
+        _.each(cpe_config[project], function (umInfo, customIdName) {
+          if (customIdName == custom || customIdName.indexOf(custom + "_") == 0) {
+            serCustomIdName = customIdName
+            return false
+          }
+        })
+        if (serCustomIdName !== "") {
+          umPath = findUmPath(serCustomIdName)
+        }
+        if (umPath == "") {
+          if (_.has(cpe_config[project][serCustomIdName], "redirect")) {
+            umPath = findUmPath(cpe_config[project][serCustomIdName].redirect)
+          }
+
+        }
+        if (umPath == "") {
+          umPath = findUmPath("00_Generic")
+        }
+        document.getElementById("loading").innerHTML=""
+        window.location.href = href.replace("url.html", umPath)
+      } else {
+        alert("Error:project error")
+      }
+    }
+
+
+    function init() {
+
+
+
+      //特殊处理
+      switch (project) {
+        case "HH41":
+          switch (custom) {
+            case "NH_JO":
+              custom = "JO"
+              break;
+          }
+          break;
+      }
+      if (lang == 'en_uk') {
+        lang = 'en'
+      }
+      if (lang == 'sp' || lang == 'sp_latam') {
+        lang = 'es'
+      }
+      if (lang == 'po') {//WEB UI使用po，APP使用pl
+        lang = 'pl'
+      }
+      initCpeUM()
+    }
+    init()
+  </script>
+</body>
+
+</html>
